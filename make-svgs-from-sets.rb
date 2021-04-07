@@ -12,6 +12,7 @@
 ##         Set name to start at.
 
 require 'date'
+require 'fileutils'
 require 'httparty'
 require 'json'
 require 'optparse'
@@ -207,18 +208,20 @@ end
 
 # Write everything in context to an SVG file
 def write_to_file
-  file = File.open("svg/card_divider_#{'%02d' % file_counter}.svg", 'w')
+  FileUtils.mkdir_p 'svg'
+
+  file = File.open("svg/card_divider_#{'%02d' % @file_counter}.svg", 'w')
 
   file.puts svg(
-    "card_divider_#{'%02d' % file_counter}.svg",
-    processed_sets[0],
-    processed_sets[1],
-    processed_sets[2],
-    processed_sets[3],
-    processed_sets[4],
-    processed_sets[5],
-    processed_sets[6],
-    processed_sets[7]
+    "card_divider_#{'%02d' % @file_counter}.svg",
+    @processed_sets[0],
+    @processed_sets[1],
+    @processed_sets[2],
+    @processed_sets[3],
+    @processed_sets[4],
+    @processed_sets[5],
+    @processed_sets[6],
+    @processed_sets[7]
   )
 
   file.close
@@ -239,9 +242,9 @@ ARGV.options do |opts|
 end
 
 # Increments after writing an SVG file
-file_counter = 0
+@file_counter = 0
 # Holds up to eight sets in context to write to a single SVG file
-processed_sets = []
+@processed_sets = []
 
 sets['data'].each do |set|
   # Skip until the set specified by -s is reached if -s is set
@@ -262,15 +265,15 @@ sets['data'].each do |set|
     scale = (16 / icon_svg.scan(/viewBox="\d+ \d+ (.+) .+"/).first.last.to_f)
     paths = process_icon_svg(icon_svg)
 
-    processed_sets << {set_name: set_name, short_code: short_code, date: date, scale: scale, paths: paths}
+    @processed_sets << {set_name: set_name, short_code: short_code, date: date, scale: scale, paths: paths}
   end
 
   # If eight sets have been processed, write an SVG file, then increment the counter and clear the processed sets
-  if processed_sets.size >= 8
+  if @processed_sets.size >= 8
     write_to_file
 
-    file_counter = file_counter + 1
-    processed_sets = []
+    @file_counter = @file_counter + 1
+    @processed_sets = []
   end
 end
 
